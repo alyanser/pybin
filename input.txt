@@ -1,0 +1,3 @@
+nop
+xor eax, eax
+int 0x80
