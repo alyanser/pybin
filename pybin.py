@@ -86,14 +86,17 @@ for line in sys.stdin:
 
 	ins = extract_instruction(obj_out)
 
-	if ins != None:
-		combined_res += ins
+	if ins == None:
+		continue
 
-		if options.interactive:
-			print_instructions(ins)
-			print()
+	combined_res += ins
 
-print_instructions(combined_res)
+	if options.interactive:
+		print_instructions(ins)
+		print()
+
+if combined_res:
+	print_instructions(combined_res)
 
 try:
 	os.remove("/tmp/pybin.o")
