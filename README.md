@@ -4,9 +4,10 @@ requirements:
 python3, nasm & objdump
 
 usage:
--h | --help -> show help
--a | --arch -> specify architecture for nasm
--n | --no-interactive -> do not print instructions interactively
+
+	-h | --help -> show help
+	-a | --arch -> specify architecture for nasm
+	-n | --no-interactive -> do not print instructions interactively
 
 examples:
 
