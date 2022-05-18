@@ -8,7 +8,11 @@ from optparse import OptionParser
 def get_arguments():
 	parser = OptionParser()
 
-	parser.add_option('-a', "--arch", dest = "arch", default = "elf64", help = "specify architecture (default = elf64)")
+	parser.add_option('-a', "--arch", dest = "arch", default = "elf64", 
+			help = "specify architecture (default = elf64)")
+
+	parser.add_option('-n', "--no-interactive", dest = "interactive", default = True, action = "store_false",
+			help = "do not print the instructions interactively")
 
 	return parser.parse_args()
 
@@ -22,8 +26,9 @@ def get_obj_output(inp, arch):
 	os.system("nasm -f" + arch + ' ' + in_file)
 
 	if os.path.exists(out_file):
-		pipe = os.popen("objdump -M intel -zwD " + out_file)
+		pipe = os.popen("objdump -M intel -D " + out_file)
 		return pipe.read()
+
 
 def extract_instruction(inp):
 	begin_heading = "<.text>:\n"
@@ -49,8 +54,14 @@ def print_instructions_helper(instructions, prefix, seperator):
 	print()
 	print("-" * 50)
 
-def print_instruction_binary():
-	pass
+def print_c_style(instructions):
+	print("{ ", end = "")
+
+	for i in range(0, len(instructions) - 1, 3):
+		c = '' if i == len(instructions) - 3 else ','
+		print("'\\x", instructions[i], instructions[i + 1], '\'' + c + ' ' , sep = "", end = "")
+
+	print('}')
 
 def print_instructions(instructions):
 	instructions = instructions.replace("  ", " ")
@@ -60,9 +71,9 @@ def print_instructions(instructions):
 	print("-" * 50)
 
 	print_instructions_helper(instructions, "0x", "")
-	print_instructions_helper(instructions, "0x", " ")
 	print_instructions_helper(instructions, "\\x", "")
-	print_instructions_helper(instructions, "\\x", " ")
+	print_c_style(instructions)
+
 ######
 
 (options, args) = get_arguments()
@@ -78,7 +89,9 @@ for line in sys.stdin:
 
 	if ins != None:
 		combined_res += ins
-		print_instructions(ins)
-		print()
+
+		if options.interactive:
+			print_instructions(ins)
+			print()
 
 print_instructions(combined_res)
