@@ -17,18 +17,17 @@ def get_arguments():
 	return parser.parse_args()
 
 def get_obj_output(inp, arch):
-	in_file = "/tmp/nasm.in"
-	out_file = "/tmp/nasm.o"
+	in_file = "/tmp/pybin.s"
+	obj_file = "/tmp/pybin.o"
 
 	with open(in_file, "w") as f:
 		f.write(inp)
 
 	os.system("nasm -f" + arch + ' ' + in_file)
 
-	if os.path.exists(out_file):
-		pipe = os.popen("objdump -M intel -D " + out_file)
+	if os.path.exists(obj_file):
+		pipe = os.popen("objdump -M intel -D " + obj_file)
 		return pipe.read()
-
 
 def extract_instruction(inp):
 	begin_heading = "<.text>:\n"
@@ -41,7 +40,7 @@ def extract_instruction(inp):
 	inp = inp[start_pos:]
 	ret = str()
 
-	for m in re.finditer('([a-fA-F0-9]{2}( {1,2}))+(?!\n)', inp):
+	for m in re.finditer("([a-fA-F0-9]{2}( {1,2}))+(?!\n)", inp):
 		ret += m.group(0)
 
 	return ret
@@ -52,26 +51,26 @@ def print_instructions_helper(instructions, prefix, seperator):
 		print(prefix, instructions[i], instructions[i + 1], sep = "", end = seperator) 
 	
 	print()
-	print("-" * 50)
+	print('-' * 50)
 
 def print_c_style(instructions):
 	print("{ ", end = "")
 
 	for i in range(0, len(instructions) - 1, 3):
 		c = '' if i == len(instructions) - 3 else ','
-		print("'\\x", instructions[i], instructions[i + 1], '\'' + c + ' ' , sep = "", end = "")
+		print("'\\x", instructions[i], instructions[i + 1], '\'' + c + ' ' , sep = '', end = '')
 
 	print('}')
 
 def print_instructions(instructions):
-	instructions = instructions.replace("  ", " ")
+	instructions = instructions.replace("  ", ' ')
 
 	print("-" * 50)
 	print(instructions)
 	print("-" * 50)
 
-	print_instructions_helper(instructions, "0x", "")
-	print_instructions_helper(instructions, "\\x", "")
+	print_instructions_helper(instructions, "0x", '')
+	print_instructions_helper(instructions, "\\x", '')
 	print_c_style(instructions)
 
 ######
@@ -95,3 +94,9 @@ for line in sys.stdin:
 			print()
 
 print_instructions(combined_res)
+
+try:
+	os.remove("/tmp/pybin.o")
+	os.remove("/tmp/pybin.s")
+except:
+	pass
